@@ -1,16 +1,16 @@
 === Plugin Name ===
 Contributors: jarinteractive
 Donate link: http://www.jarinteractive.com/code/photojar
-Tags: thumbnail, blog, post thumbnail, gallery, photo, lightbox, thickbox, slimbox, image, photoJAR
+Tags: thumbnail, images, post thumbnail, gallery, photo, lightbox, thickbox, slimbox, image, photoJAR
 Requires at least: 2.5.1
-Tested up to: 2.6
-Stable tag: 1.0b1
+Tested up to: 2.6.1
+Stable tag: 1.0b2
 
-PhotoJAR: Post thumbnail displays a post thumbnail for posts with galleries.  Additional features when paired with a javascript viewer such as Lightbox.
+PhotoJAR: Post thumbnailer displays a post thumbnail for posts with galleries - additional features when paired with a javascript viewer such as Lightbox.
 
 == Description ==
 
-PhotoJAR: Post Thumbnail displays a post thumbnail for posts with galleries.  When paired with a javascript viewer, the full gallery can be displayed
+PhotoJAR: Post Thumbnailer displays a post thumbnail for posts with galleries.  When paired with a javascript viewer, the full gallery can be displayed
 when the thumbnail is clicked.  PhotoJAR: Post Thumbnail requires PhotoJAR: Base.
 
 For additional info visit [JARinteractive](http://www.jarinteractive.com/code/photojar).
@@ -31,7 +31,7 @@ Requires PHP5 and [PhotoJAR: Base](http://www.jarinteractive.com/code/photojar/)
 = Can I change the display of the thumbnail? =
 
 You can change the template used to display thumbnails by editing the default-theme.php file in the plugin directory.  
-Note: Back-up yourchanges to default-theme.php, as they will be overwritten when PhotoJAR: Post Thumbnail is updated  (This is only Beta 1!). 
+Note: Back-up yourchanges to default-theme.php, as they will be overwritten when PhotoJAR: Post Thumbnailer is updated  (This is only Beta 1!). 
 Future versions will define a location for custom themes. 
 
 = What if I find a bug? =
