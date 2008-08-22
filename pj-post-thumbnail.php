@@ -3,7 +3,7 @@
  * Plugin Name: PhotoJAR: Post Thumbnail
  * Plugin URI: http://www.jarinteractive.com/code/photojar/photojar-post-thumbnail
  * Description: Creates a single gallery thumbnail for posts.
- * Version: 1.0 Beta-1
+ * Version: 1.0 Beta-2
  * Author: James Rantanen
  * Author URI: http://www.jarinteractive.com
  */
