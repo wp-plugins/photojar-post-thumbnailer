@@ -3,7 +3,7 @@
  * Plugin Name: PhotoJAR: Post Thumbnail
  * Plugin URI: http://www.jarinteractive.com/code/photojar/photojar-post-thumbnail
  * Description: Creates a single gallery thumbnail for posts.
- * Version: 1.0 Beta-2
+ * Version: 1.0 Beta-3
  * Author: James Rantanen
  * Author URI: http://www.jarinteractive.com
  */
@@ -147,7 +147,7 @@ class PJPostThumbnail
 			<th scope="row"><?php _e('Link Post Thumbnail To') ?></th>
 			<td>
 				<select name="pj_post_thumb_linkto" id="pj_post_thumb_linkto">
-					<option value="default" <?php if($pjPostThumbLinkTo=='default'){echo 'permalink';}?>>Post Permalink</option>
+					<option value="permalink" <?php if($pjPostThumbLinkTo=='permalink'){echo 'selected';}?>>Post Permalink</option>
 					<option value="viewer" <?php if($pjPostThumbLinkTo=='viewer'){echo 'selected';}?>>Javascript Viewer</option>
 					<option value="full" <?php if($pjPostThumbLinkTo=='full'){echo 'selected';}?>>Full Size Image (Single Image)</option>
 					<option value="viewer-single" <?php if($pjPostThumbLinkTo=='viewer-single'){echo 'selected';}?>>Javascript Viewer (Single Image)</option>
