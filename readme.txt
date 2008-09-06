@@ -4,7 +4,7 @@ Donate link: http://www.jarinteractive.com/code/photojar
 Tags: thumbnail, images, post thumbnail, gallery, photo, lightbox, thickbox, slimbox, image, photoJAR
 Requires at least: 2.5.1
 Tested up to: 2.6.1
-Stable tag: 1.0b3
+Stable tag: 1.0b4
 
 PhotoJAR: Post thumbnailer displays a post thumbnail for posts with galleries - additional options when paired with a javascript viewer.
 
@@ -31,7 +31,7 @@ Requires PHP5 and [PhotoJAR: Base](http://www.jarinteractive.com/code/photojar/)
 = Can I change the display of the thumbnail? =
 
 You can change the template used to display thumbnails by editing the default-theme.php file in the plugin directory.  
-Note: Back-up yourchanges to default-theme.php, as they will be overwritten when PhotoJAR: Post Thumbnailer is updated  (This is only Beta 1!). 
+Note: Back-up yourchanges to default-theme.php, as they will be overwritten when PhotoJAR: Post Thumbnailer is updated  (This is still a beta release!). 
 Future versions will define a location for custom themes. 
 
 = What if I find a bug? =

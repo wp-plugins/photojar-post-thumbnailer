@@ -3,7 +3,7 @@
  * Plugin Name: PhotoJAR: Post Thumbnail
  * Plugin URI: http://www.jarinteractive.com/code/photojar/photojar-post-thumbnail
  * Description: Creates a single gallery thumbnail for posts.
- * Version: 1.0 Beta-3
+ * Version: 1.0 Beta-4
  * Author: James Rantanen
  * Author URI: http://www.jarinteractive.com
  */
@@ -104,7 +104,7 @@ class PJPostThumbnail
 		return $thumb->linkto;
 	}
 
-	public static function processContent($content)
+	public static function processContent($content, $excerpt = false)
 	{
 		global $post;
 		$thumbnailPost = $post;
@@ -114,23 +114,39 @@ class PJPostThumbnail
 		{
 			$gallery = PJGallery::getGalleryFromPost($thumbnailPost);
 			self::$currentGallery = $gallery;
+			if($excerpt)
+				$content = wp_trim_excerpt($content);
 			if($gallery)
 			{
 				$thumb = $gallery->getThumbnail();
 				remove_shortcode('gallery');
 				add_shortcode('gallery', create_function('$a','return "";'));
 				
+				//bloginfo('stylesheet_directory');
+				
 				ob_start(); // Enable output buffering
 				include(PJ_THUMB_PLUGIN_PATH.'default-theme.php');
 				$content = ob_get_contents(); //grab the buffer contents
 				ob_end_clean(); //clear & close the buffer
-				
 				if(get_option('pj_post_thumb_linkto') == 'viewer' || get_option('pj_post_thumb_linkto') == 'viewer-single')
 					$content = LinkUtility::whateverBox($content);
 			}
 		}
+		else if($excerpt)
+		{
+			$content = wp_trim_excerpt($content);
+		}
 		return $content;
 	}
+
+	public static function processExcerpt($content)
+	{
+		remove_filter('the_content', array(PJPostThumbnail, 'processContent'), 0, 1);
+		$content = PJPostThumbnail::processContent($content, true);
+		add_filter('the_content', array(PJPostThumbnail, 'processContent'), 0, 1);
+		return $content;
+	}
+	
 	public static function options()
 	
 	{
@@ -202,6 +218,8 @@ class PJPostThumbnail
 $postThumbnailer= new PJPostThumbnail();
 
 add_filter('the_content', array(PJPostThumbnail, 'processContent'), 0, 1);
+add_filter('the_excerpt', array(PJPostThumbnail, 'processExcerpt'), 0, 1);
+remove_filter('get_the_excerpt', 'wp_trim_excerpt');
 add_action('activate_pj-post-thumbnail/pj-post-thumbnail.php', array(PJPostThumbnail, 'install'));
 add_action('pj_config', array(PJPostThumbnail, 'options'));
 add_action('pj_config_post', array(PJPostThumbnail, 'updateOptions'));
