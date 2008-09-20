@@ -2,8 +2,8 @@
 /**
  * Plugin Name: PhotoJAR: Post Thumbnail
  * Plugin URI: http://www.jarinteractive.com/code/photojar/photojar-post-thumbnail
- * Description: Creates a single gallery thumbnail for posts.
- * Version: 1.0 Beta-4
+ * Description: Set and display post thumbnails.  Can display a full gallery when using a javascript viewer.
+ * Version: 1.0 Beta-5
  * Author: James Rantanen
  * Author URI: http://www.jarinteractive.com
  */
@@ -35,50 +35,99 @@ define('PJ_THUMB_PLUGIN_PATH', dirname(__FILE__).'/');
 
 class PJPostThumbnail
 {
-	private static $currentGallery = null;
+	private $currentGallery = null;
+	private $thumb = null;
+	private $post = null;
 	
-	public static function getThumb()
+	function __construct($post)
 	{
-		$gallery = self::$currentGallery;
-		return $gallery->getThumbnail();
+		$this->post = $post;
 	}
 	
-	public static function getImages()
+	public function getThumb()
 	{
-		$gallery = self::$currentGallery;
-		return $gallery->getItems();
+		global $post;
+		if($this->thumb != null)
+			return $this->thumb;
+			
+		$thumbID = get_post_meta($this->post->ID, '_pj_post_thumbnail', true);
+		if($thumbID != '' && $thumbID != 'default')
+		{
+			$this->thumb = new PJGalleryItem();
+			$this->thumb->imageID = $thumbID;
+			$thumbInfo = get_post($thumbID);
+			$this->thumb->title = $thumbInfo->post_title;
+			$this->thumb->caption = $thumbInfo->post_excerpt;
+		}
+		else
+		{
+			$gallery = $this->getGallery();
+			if($gallery)
+				$this->thumb = $gallery->getThumbnail();
+		}
+		
+		if($this->thumb)
+			return $this->thumb;
+			
+		return null;
 	}
 	
-	public static function getImageLinks($excludeThumb = true)
+	public function getGallery()
+	{
+		if($this->currentGallery != null)
+			return $this->currentGallery;
+		
+		$gallery = PJGallery::getGalleryFromPost($this->post);
+		if($gallery)
+		{
+			$this->currentGallery = $gallery;
+			return $gallery;
+		}
+		return null;
+	}
+	
+	public function getImages()
+	{
+		$gallery = $this->getGallery();
+		if($gallery != null)
+			return $gallery->getItems();
+		else
+			return null;
+	}
+	
+	public function getImageLinks($excludeThumb = true)
 	{
 		$tags = '';
 			
 		if(get_option('pj_post_thumb_linkto') == 'viewer')
 		{
-			$gallery = self::$currentGallery;
-			$images = $gallery->getItems();
-			$thumb = $gallery->getThumbnail();
-			foreach($images as $image)
+			$gallery = $this->getGallery();
+			if($gallery != null)
 			{
-				if($excludeThumb && $image->imageID == $thumb->imageID)
-					continue;
-				$imageSrc = image_downsize($image->imageID, 'thumbnail');
-				$tags .= '<a href="'.LinkUtility::imageLink($image->imageID, 'full').'" title="'.$image->title.'" ><span title="'.$image->title.'">'.$image->title.'</span></a>'."\n";
+				$images = $gallery->getItems();
+				$thumb = $gallery->getThumbnail();
+				foreach($images as $image)
+				{
+					if($excludeThumb && $image->imageID == $thumb->imageID)
+						continue;
+					$imageSrc = image_downsize($image->imageID, 'thumbnail');
+					$tags .= '<a href="'.LinkUtility::imageLink($image->imageID, 'full').'" title="'.$image->title.'" ><span title="'.$image->title.'">'.$image->title.'</span></a>'."\n";
+				}
 			}
 		}
 		return $tags;
 	}
 	
-	public static function getThumbTag($withLink = true, $size = null)
+	public function getThumbTag($withLink = true, $size = null)
 	{
-		$thumb = self::getThumb();
+		$thumb = $this->getThumb();
 		if($size == null)
 		{
 			$size = get_option('pj_post_thumb_size');
 			if($size == 'custom')
 			{
 				$size = get_option('pj_custom_post_thumb_width').'x'.get_option('pj_custom_post_thumb_height');
-				if('crop' == get_option('pj_post_thumb_crop'))
+				if('true' == get_option('pj_custom_post_thumb_crop'))
 					$size .= 'xcrop';
 			}
 		}
@@ -88,44 +137,47 @@ class PJPostThumbnail
 		if($withLink)
 		{
 			$linkto = array_shift(split('-', get_option('pj_post_thumb_linkto')));
-			$gallery = self::$currentGallery;
-			$atts = $gallery->getAttributes();
+			$gallery = $this->getGallery();
+			if($gallery != null)
+				$atts = $gallery->getAttributes();
 			if($linkto == 'permalink' || $atts['showchildren'] == 'true')
-				$linkto = get_permalink();
-				
+				$linkto = get_permalink($this->post->ID);
 			$tag = '<a href="'.LinkUtility::imageLink($thumb->imageID, $linkto).'">'.$tag.'</a>';
 		}
 		return $tag;
 	}
 	
-	public static function getThumbLink()
+	public function getThumbLink()
 	{
-		$thumb = self::getThumb();
+		$thumb = $this->getThumb();
 		return $thumb->linkto;
 	}
 
 	public static function processContent($content, $excerpt = false)
 	{
-		global $post;
+		global $post, $postThumbnail, $pjContent;
 		$thumbnailPost = $post;
 		$thumbnailPost->the_content = $content;
 		$imageString='';
 		if(is_home() || is_archive() || is_search())
 		{
-			$gallery = PJGallery::getGalleryFromPost($thumbnailPost);
-			self::$currentGallery = $gallery;
+			$postThumbnail = new PJPostThumbnail($post);
 			if($excerpt)
 				$content = wp_trim_excerpt($content);
-			if($gallery)
+			if($postThumbnail->getThumb() != null)
 			{
-				$thumb = $gallery->getThumbnail();
+				$pjContent = $content;
 				remove_shortcode('gallery');
 				add_shortcode('gallery', create_function('$a','return "";'));
 				
-				//bloginfo('stylesheet_directory');
+				$templatePath = PJ_THUMB_PLUGIN_PATH.'default-theme.php';
+				if(file_exists(TEMPLATEPATH.'/pj-post-thumb.php'))
+				{
+					$templatePath = TEMPLATEPATH.'/pj-post-thumb.php';
+				}
 				
 				ob_start(); // Enable output buffering
-				include(PJ_THUMB_PLUGIN_PATH.'default-theme.php');
+				include($templatePath);
 				$content = ob_get_contents(); //grab the buffer contents
 				ob_end_clean(); //clear & close the buffer
 				if(get_option('pj_post_thumb_linkto') == 'viewer' || get_option('pj_post_thumb_linkto') == 'viewer-single')
@@ -214,12 +266,69 @@ class PJPostThumbnail
 			update_option('pj_post_thumb_size', 'thumbnail');
 		}
 	}
-}
-$postThumbnailer= new PJPostThumbnail();
+	
+	// Adds the Post Thumbnail box to the Edit Post page
+	public static function post_box()
+	{
+	    add_meta_box( 'pj_post_thumbnailer', __( 'Post Thumbnail', 'myplugin_textdomain' ), 
+	                array(PJPostThumbnail, 'post_inner_box'), 'post', 'advanced' );
+	    //add_meta_box( 'pj_post_thumbnailer', __( 'My Post Section Title', 'myplugin_textdomain' ), 'pj_post_thumbnailer_box', 'page', 'advanced' );
+	}
+	   
+	// Put stuff in the Post Thumbnail box
+	public static function post_inner_box() 
+	{
+		global $post;
+		// Use nonce for verification
+		echo '<input type="hidden" name="pj_post_thumb_nonce" id="pj_post_thumb_nonce" value="' . 
+	    wp_create_nonce( plugin_basename(__FILE__) ) . '" />';
 
+		// The actual fields for data entry
+		$gallery = new PJGallery('', $post->ID);
+		$images = $gallery->getItems();
+		echo '<label for="pj_post_thumbnail">' . __("Post Thumbnail: ") . '</label> ';
+		echo '<select name="pj_post_thumbnail" id="pj_post_thumbnail">';
+		echo '<option value="default">Default</option>';
+		foreach($images as $image)
+		{
+			$selected = '';
+			if($image->imageID == get_post_meta($post->ID, '_pj_post_thumbnail', true))
+				$selected = 'selected';
+			echo '<option value="'.$image->imageID.'" '.$selected.'>'.$image->title.'</option>';
+		}
+		echo '</select><br />';
+		echo 'Save the post to update this list with newly added images.';
+	}
+
+	//save the thumb ID
+	public static function post_save( $post_id ) 
+	{
+		if (!wp_verify_nonce( $_POST['pj_post_thumb_nonce'], plugin_basename(__FILE__)))
+			return $post_id;
+
+		if (('page' == $_POST['post_type'] && !current_user_can('edit_page', $post_id)) || !current_user_can( 'edit_post', $post_id ))
+			return $post_id;
+
+		$thumbID = $_POST['pj_post_thumbnail'];
+		add_post_meta($post_id, '_pj_post_thumbnail', $thumbID, true) or update_post_meta($post_id, '_pj_post_thumbnail', $thumbID);
+
+		return $thumbID;
+	}
+}
+
+$postThumbnail = null;
+$pjContent = null;
+
+//display filters
 add_filter('the_content', array(PJPostThumbnail, 'processContent'), 0, 1);
 add_filter('the_excerpt', array(PJPostThumbnail, 'processExcerpt'), 0, 1);
-remove_filter('get_the_excerpt', 'wp_trim_excerpt');
+remove_filter('get_the_excerpt', 'wp_trim_excerpt'); //will be called from processContent to avoid the_content weirdness
 add_action('activate_pj-post-thumbnail/pj-post-thumbnail.php', array(PJPostThumbnail, 'install'));
+
+//PhotoJAR Settings
 add_action('pj_config', array(PJPostThumbnail, 'options'));
 add_action('pj_config_post', array(PJPostThumbnail, 'updateOptions'));
+
+//Edit Post page
+add_action('admin_menu', array(PJPostThumbnail, 'post_box'));
+add_action('save_post', array(PJPostThumbnail, 'post_save'));
