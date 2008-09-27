@@ -4,7 +4,7 @@ Donate link: http://www.jarinteractive.com/code/photojar
 Tags: thumbnail, images, post thumbnail, gallery, photo, lightbox, thickbox, slimbox, image, photoJAR
 Requires at least: 2.6
 Tested up to: 2.6.2
-Stable tag: 1.0b5
+Stable tag: 1.0b6
 
 PhotoJAR: Post thumbnailer displays a post thumbnail for posts with galleries - additional options when paired with a javascript viewer.
 

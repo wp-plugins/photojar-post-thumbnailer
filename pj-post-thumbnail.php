@@ -3,7 +3,7 @@
  * Plugin Name: PhotoJAR: Post Thumbnail
  * Plugin URI: http://www.jarinteractive.com/code/photojar/photojar-post-thumbnail
  * Description: Set and display post thumbnails.  Can display a full gallery when using a javascript viewer.
- * Version: 1.0 Beta-5
+ * Version: 1.0 Beta-6
  * Author: James Rantanen
  * Author URI: http://www.jarinteractive.com
  */
@@ -105,7 +105,7 @@ class PJPostThumbnail
 			if($gallery != null)
 			{
 				$images = $gallery->getItems();
-				$thumb = $gallery->getThumbnail();
+				$thumb = $this->getThumb();
 				foreach($images as $image)
 				{
 					if($excludeThumb && $image->imageID == $thumb->imageID)
@@ -142,7 +142,7 @@ class PJPostThumbnail
 				$atts = $gallery->getAttributes();
 			if($linkto == 'permalink' || $atts['showchildren'] == 'true')
 				$linkto = get_permalink($this->post->ID);
-			$tag = '<a href="'.LinkUtility::imageLink($thumb->imageID, $linkto).'">'.$tag.'</a>';
+			$tag = '<a href="'.LinkUtility::imageLink($thumb->imageID, $linkto).'" title="'.$thumb->title.'" >'.$tag.'</a>';
 		}
 		return $tag;
 	}
